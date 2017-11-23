@@ -18,13 +18,13 @@ namespace asgn5v1
 		//private bool GetNewData();
 
 		// basic data for Transformer
-
+        
 		int numpts = 0;
 		int numlines = 0;
 		bool gooddata = false;		
 		double[,] vertices;
 		double[,] scrnpts;
-		double[,] ctrans = new double[4,4];  //your main transformation matrix
+		double[,] tnet = new double[4,4];  //your main transformation matrix
 		private System.Windows.Forms.ImageList tbimages;
 		private System.Windows.Forms.ToolBar toolBar1;
 		private System.Windows.Forms.ToolBarButton transleftbtn;
@@ -56,7 +56,7 @@ namespace asgn5v1
 			// Required for Windows Form Designer support
 			//
 			InitializeComponent();
-
+            
 			//
 			// TODO: Add any constructor code after InitializeComponent call
 			//
@@ -331,25 +331,11 @@ namespace asgn5v1
 		protected override void OnPaint(PaintEventArgs pea)
 		{
 			Graphics grfx = pea.Graphics;
-         Pen pen = new Pen(Color.White, 3);
-			double temp;
-			int k;
+            Pen pen = new Pen(Color.White, 3);
 
             if (gooddata)
             {
-                //create the screen coordinates:
-                // scrnpts = vertices*ctrans
-
-                for (int i = 0; i < numpts; i++)
-                {
-                    for (int j = 0; j < 4; j++)
-                    {
-                        temp = 0.0d;
-                        for (k = 0; k < 4; k++)
-                            temp += vertices[i, k] * ctrans[k, j];
-                        scrnpts[i, j] = temp;
-                    }
-                }
+                scrnpts = Tranformations.MatrixMultiply(vertices, tnet);
 
                 //now draw the lines
 
@@ -383,7 +369,16 @@ namespace asgn5v1
 
 		void RestoreInitialImage()
 		{
-			Invalidate();
+            setIdentity(tnet, 4, 4);
+            //create the screen coordinates:
+            // scrnpts = vertices*ctrans
+            tnet = Tranformations.TranslateToOrigin(vertices, tnet);
+            tnet = Tranformations.ReflectOnYAxis(tnet);
+            //tnet = Tranformations.ScaleToIntial(tnet, this.Height);
+            tnet = Tranformations.TranslateToCenter(tnet, this.Width, this.Height);
+
+            Tranformations.PrintMatrix(tnet);
+            Invalidate();
 		} // end of RestoreInitialImage
 
 		bool GetNewData()
@@ -432,7 +427,7 @@ namespace asgn5v1
 				return false;
 			}
 			scrnpts = new double[numpts,4];
-			setIdentity(ctrans,4,4);  //initialize transformation matrix to identity
+			setIdentity(tnet,4,4);  //initialize transformation matrix to identity
 			return true;
 		} // end of GetNewData
 
@@ -450,7 +445,7 @@ namespace asgn5v1
 				vertices[numpts,1]=double.Parse(text[1]);
 				vertices[numpts,2]=double.Parse(text[2]);
 				vertices[numpts,3] = 1.0d;
-				numpts++;						
+				numpts++;
 			}
 			
 		}// end of DecodeCoords
