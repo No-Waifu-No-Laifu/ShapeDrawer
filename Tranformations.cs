@@ -5,14 +5,14 @@ namespace asgn5v1
 {
     public static class Tranformations
     {
-        public static double[,] TranslateToOrigin(double [,] vertices, double[,] tnet)
+        public static double[,] TranslateToOrigin(double[,] vertices, double[,] tnet)
         {
             double x, y, z;
             double[,] tranformation = new double[4, 4];
-   
-            x = Math.Abs(vertices[0,0]) * -1;
-            y = Math.Abs(vertices[0,1]) * -1;
-            z = Math.Abs(vertices[0,2]) * -1;
+
+            x = vertices[0, 0] * -1;
+            y = vertices[0, 1] * -1;
+            z = vertices[0, 2] * -1;
             tranformation[0, 0] = 1;
             tranformation[1, 1] = 1;
             tranformation[2, 2] = 1;
@@ -54,15 +54,25 @@ namespace asgn5v1
             return MatrixMultiply(tnet, transformation);
         }
 
-        public static double[,] ScaleToIntial(double[,] tnet, double screenHeight)
+        public static double[,] ScaleToIntial(double[,] vertices, double[,] tnet, double screenHeight)
         {
             double[,] transformation = new double[4, 4];
 
-            transformation[0, 0] = 1;
-            transformation[1, 1] = 1;
-            transformation[2, 2] = 1;
+            int rows = vertices.GetLength(0);
+            int cols = vertices.GetLength(1);
+            double min, max;
+
+            min = vertices[0, 1];
+            max = vertices[0, 1];
+            for (int i = 1; i < rows; i++)
+            {
+                min = Math.Min(vertices[i, 1], min);
+                max = Math.Max(vertices[i, 1], max);
+            }
+            double height = max - min;
+            double scale = (screenHeight / 2) / height;
+
             transformation[3, 3] = 1;
-            double scale = screenHeight / 2;
 
             transformation[0, 0] = scale;
             transformation[1, 1] = scale;
@@ -98,9 +108,9 @@ namespace asgn5v1
         {
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
-            for(int i = 0; i < rows; i ++)
+            for (int i = 0; i < rows; i++)
             {
-                for(int j = 0; j < cols; j++)
+                for (int j = 0; j < cols; j++)
                 {
                     Debug.Write(matrix[i, j] + " ");
                 }
