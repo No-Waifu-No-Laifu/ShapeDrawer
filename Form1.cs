@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using System.Data;
 using System.IO;
 using System.Text;
+using System.Threading;
 
 namespace asgn5v1
 {
@@ -26,6 +27,8 @@ namespace asgn5v1
         private double[,] _vertices;
         private double[,] _scrnpts;
         private double[,] _tnet = new double[4, 4];  //your main transformation matrix
+        private bool _rotating = false;
+        private Thread _thread;
         private System.Windows.Forms.ImageList tbimages;
         private System.Windows.Forms.ToolBar toolBar1;
         private System.Windows.Forms.ToolBarButton transleftbtn;
@@ -127,9 +130,9 @@ namespace asgn5v1
             this.resetbtn = new System.Windows.Forms.ToolBarButton();
             this.exitbtn = new System.Windows.Forms.ToolBarButton();
             this.SuspendLayout();
-            //
+            // 
             // tbimages
-            //
+            // 
             this.tbimages.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("tbimages.ImageStream")));
             this.tbimages.TransparentColor = System.Drawing.Color.Transparent;
             this.tbimages.Images.SetKeyName(0, "");
@@ -148,9 +151,9 @@ namespace asgn5v1
             this.tbimages.Images.SetKeyName(13, "");
             this.tbimages.Images.SetKeyName(14, "");
             this.tbimages.Images.SetKeyName(15, "");
-            //
+            // 
             // toolBar1
-            //
+            // 
             this.toolBar1.Buttons.AddRange(new System.Windows.Forms.ToolBarButton[] {
             this.transleftbtn,
             this.transrightbtn,
@@ -182,139 +185,141 @@ namespace asgn5v1
             this.toolBar1.Size = new System.Drawing.Size(24, 306);
             this.toolBar1.TabIndex = 0;
             this.toolBar1.ButtonClick += new System.Windows.Forms.ToolBarButtonClickEventHandler(this.toolBar1_ButtonClick);
-            //
+            // 
             // transleftbtn
-            //
+            // 
             this.transleftbtn.ImageIndex = 1;
             this.transleftbtn.Name = "transleftbtn";
             this.transleftbtn.ToolTipText = "translate left";
-            //
+            // 
             // transrightbtn
-            //
+            // 
             this.transrightbtn.ImageIndex = 0;
             this.transrightbtn.Name = "transrightbtn";
             this.transrightbtn.ToolTipText = "translate right";
-            //
+            // 
             // transupbtn
-            //
+            // 
             this.transupbtn.ImageIndex = 2;
             this.transupbtn.Name = "transupbtn";
             this.transupbtn.ToolTipText = "translate up";
-            //
+            // 
             // transdownbtn
-            //
+            // 
             this.transdownbtn.ImageIndex = 3;
             this.transdownbtn.Name = "transdownbtn";
             this.transdownbtn.ToolTipText = "translate down";
-            //
+            // 
             // toolBarButton1
-            //
+            // 
             this.toolBarButton1.Name = "toolBarButton1";
             this.toolBarButton1.Style = System.Windows.Forms.ToolBarButtonStyle.Separator;
-            //
+            // 
             // scaleupbtn
-            //
+            // 
             this.scaleupbtn.ImageIndex = 4;
             this.scaleupbtn.Name = "scaleupbtn";
             this.scaleupbtn.ToolTipText = "scale up";
-            //
+            // 
             // scaledownbtn
-            //
+            // 
             this.scaledownbtn.ImageIndex = 5;
             this.scaledownbtn.Name = "scaledownbtn";
             this.scaledownbtn.ToolTipText = "scale down";
-            //
+            // 
             // toolBarButton2
-            //
+            // 
             this.toolBarButton2.Name = "toolBarButton2";
             this.toolBarButton2.Style = System.Windows.Forms.ToolBarButtonStyle.Separator;
-            //
+            // 
             // rotxby1btn
-            //
+            // 
             this.rotxby1btn.ImageIndex = 6;
             this.rotxby1btn.Name = "rotxby1btn";
             this.rotxby1btn.ToolTipText = "rotate about x by 1";
-            //
+            // 
             // rotyby1btn
-            //
+            // 
             this.rotyby1btn.ImageIndex = 7;
             this.rotyby1btn.Name = "rotyby1btn";
             this.rotyby1btn.ToolTipText = "rotate about y by 1";
-            //
+            // 
             // rotzby1btn
-            //
+            // 
             this.rotzby1btn.ImageIndex = 8;
             this.rotzby1btn.Name = "rotzby1btn";
             this.rotzby1btn.ToolTipText = "rotate about z by 1";
-            //
+            // 
             // toolBarButton3
-            //
+            // 
             this.toolBarButton3.Name = "toolBarButton3";
             this.toolBarButton3.Style = System.Windows.Forms.ToolBarButtonStyle.Separator;
-            //
+            // 
             // rotxbtn
-            //
+            // 
             this.rotxbtn.ImageIndex = 9;
             this.rotxbtn.Name = "rotxbtn";
             this.rotxbtn.ToolTipText = "rotate about x continuously";
-            //
+            // 
             // rotybtn
-            //
+            // 
             this.rotybtn.ImageIndex = 10;
             this.rotybtn.Name = "rotybtn";
             this.rotybtn.ToolTipText = "rotate about y continuously";
-            //
+            // 
             // rotzbtn
-            //
+            // 
             this.rotzbtn.ImageIndex = 11;
             this.rotzbtn.Name = "rotzbtn";
             this.rotzbtn.ToolTipText = "rotate about z continuously";
-            //
+            // 
             // toolBarButton4
-            //
+            // 
             this.toolBarButton4.Name = "toolBarButton4";
             this.toolBarButton4.Style = System.Windows.Forms.ToolBarButtonStyle.Separator;
-            //
+            // 
             // shearrightbtn
-            //
+            // 
             this.shearrightbtn.ImageIndex = 12;
             this.shearrightbtn.Name = "shearrightbtn";
             this.shearrightbtn.ToolTipText = "shear right";
-            //
+            // 
             // shearleftbtn
-            //
+            // 
             this.shearleftbtn.ImageIndex = 13;
             this.shearleftbtn.Name = "shearleftbtn";
             this.shearleftbtn.ToolTipText = "shear left";
-            //
+            // 
             // toolBarButton5
-            //
+            // 
             this.toolBarButton5.Name = "toolBarButton5";
             this.toolBarButton5.Style = System.Windows.Forms.ToolBarButtonStyle.Separator;
-            //
+            // 
             // resetbtn
-            //
+            // 
             this.resetbtn.ImageIndex = 14;
             this.resetbtn.Name = "resetbtn";
             this.resetbtn.ToolTipText = "restore the initial image";
-            //
+            // 
             // exitbtn
-            //
+            // 
             this.exitbtn.ImageIndex = 15;
             this.exitbtn.Name = "exitbtn";
             this.exitbtn.ToolTipText = "exit the program";
-            //
+            // 
             // Transformer
-            //
-            this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
+            // 
+            this.AutoScaleBaseSize = new System.Drawing.Size(9, 22);
             this.ClientSize = new System.Drawing.Size(508, 306);
             this.Controls.Add(this.toolBar1);
             this.Name = "Transformer";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Transformer_FormClosing);
             this.Load += new System.EventHandler(this.Transformer_Load);
             this.ClientSizeChanged += new System.EventHandler(this.Transformer_ClientSizeChanged);
             this.ResumeLayout(false);
             this.PerformLayout();
+
         }
 
         #endregion Windows Form Designer generated code
@@ -335,7 +340,7 @@ namespace asgn5v1
 
             if (_gooddata)
             {
-                _scrnpts = Tranformations.MatrixMultiply(_vertices, _tnet);
+                _scrnpts = Transformations.MatrixMultiply(_vertices, _tnet);
 
                 //now draw the lines
 
@@ -371,14 +376,14 @@ namespace asgn5v1
             // scrnpts = vertices*ctrans
             if (_gooddata)
             {
-                setIdentity(_tnet, 4, 4);
-                _tnet = Tranformations.TranslateToOrigin(_vertices, _tnet);
-                _tnet = Tranformations.ReflectOnYAxis(_tnet);
-                _tnet = Tranformations.ScaleToIntial(_vertices, _tnet, this.ClientRectangle.Height);
+                Transformations.SetIdentity(_tnet, 4, 4);
+                _tnet = Transformations.TranslateToOrigin(_vertices, _tnet);
+                _tnet = Transformations.ReflectOnYAxis(_tnet);
+                _tnet = Transformations.ScaleToIntial(_vertices, _tnet, this.ClientRectangle.Height);
 
-                _tnet = Tranformations.TranslateToCenter(_tnet, this.ClientRectangle.Width, this.ClientRectangle.Height);
+                _tnet = Transformations.TranslateToCenter(_tnet, this.ClientRectangle.Width, this.ClientRectangle.Height);
 
-                Tranformations.PrintMatrix(_tnet);
+                Transformations.PrintMatrix(_tnet);
                 Invalidate();
             }
         } // end of RestoreInitialImage
@@ -389,7 +394,7 @@ namespace asgn5v1
             ArrayList coorddata = new ArrayList();
             ArrayList linesdata = new ArrayList();
             OpenFileDialog opendlg = new OpenFileDialog();
-            opendlg.Title = "Choose File with Coordinates of Vertices";
+            opendlg.Title = "Choose File with Coordinates of Points";
             if (opendlg.ShowDialog() == DialogResult.OK)
             {
                 strinputfile = opendlg.FileName;
@@ -401,6 +406,7 @@ namespace asgn5v1
                     if (text != null) coorddata.Add(text);
                 } while (text != null);
                 reader.Close();
+                coorddata.RemoveAt(coorddata.Count - 1);
                 DecodeCoords(coorddata);
             }
             else
@@ -429,7 +435,7 @@ namespace asgn5v1
                 return false;
             }
             _scrnpts = new double[_numpts, 4];
-            setIdentity(_tnet, 4, 4);  //initialize transformation matrix to identity
+            Transformations.SetIdentity(_tnet, 4, 4);  //initialize transformation matrix to identity
             return true;
         } // end of GetNewData
 
@@ -442,8 +448,8 @@ namespace asgn5v1
             for (int i = 0; i < coorddata.Count; i++)
             {
                 text = coorddata[i].ToString().Split(' ', ',');
+                if (text[0].Equals("-1")) break;
                 _vertices[_numpts, 0] = double.Parse(text[0]);
-                if (_vertices[_numpts, 0] < 0.0d) break;
                 _vertices[_numpts, 1] = double.Parse(text[1]);
                 _vertices[_numpts, 2] = double.Parse(text[2]);
                 _vertices[_numpts, 3] = 1.0d;
@@ -467,14 +473,7 @@ namespace asgn5v1
             }
         } // end of DecodeLines
 
-        private void setIdentity(double[,] A, int nrow, int ncol)
-        {
-            for (int i = 0; i < nrow; i++)
-            {
-                for (int j = 0; j < ncol; j++) A[i, j] = 0.0d;
-                A[i, i] = 1.0d;
-            }
-        }// end of setIdentity
+
 
         private void Transformer_Load(object sender, System.EventArgs e)
         {
@@ -482,59 +481,102 @@ namespace asgn5v1
 
         private void toolBar1_ButtonClick(object sender, System.Windows.Forms.ToolBarButtonClickEventArgs e)
         {
+            if(_rotating)
+            {
+                _rotating = false;
+                _thread.Abort();
+                _thread.Join();
+                _thread = null;
+            }
             if (e.Button == transleftbtn)
             {
+                _tnet = Transformations.Translate(_tnet, -75, 0, 0);
                 Refresh();
             }
             if (e.Button == transrightbtn)
             {
+                _tnet = Transformations.Translate(_tnet, +75, 0, 0);
                 Refresh();
             }
             if (e.Button == transupbtn)
             {
+                _tnet = Transformations.Translate(_tnet, 0, -35, 0);
                 Refresh();
             }
-
             if (e.Button == transdownbtn)
             {
+                _tnet = Transformations.Translate(_tnet, 0, +35, 0);
                 Refresh();
             }
             if (e.Button == scaleupbtn)
             {
+                _tnet = Transformations.TranslateToOrigin(_scrnpts, _tnet);
+                _tnet = Transformations.ScaleUniform(_scrnpts, _tnet, 1.10);
+                _tnet = Transformations.Translate(_tnet, Transformations.PreviousXPos, Transformations.PreviousYPos, Transformations.PreviousZPos);
                 Refresh();
             }
             if (e.Button == scaledownbtn)
             {
+                _tnet = Transformations.TranslateToOrigin(_scrnpts, _tnet);
+                _tnet = Transformations.ScaleUniform(_scrnpts, _tnet, 0.90);
+                _tnet = Transformations.Translate(_tnet, Transformations.PreviousXPos, Transformations.PreviousYPos, Transformations.PreviousZPos);
                 Refresh();
             }
             if (e.Button == rotxby1btn)
             {
+                _tnet = Transformations.TranslateToOrigin(_scrnpts, _tnet);
+                _tnet = Transformations.RotateOnX(_tnet, .05);
+                _tnet = Transformations.Translate(_tnet, Transformations.PreviousXPos, Transformations.PreviousYPos, Transformations.PreviousZPos);
+                Refresh();
             }
             if (e.Button == rotyby1btn)
             {
+                _tnet = Transformations.TranslateToOrigin(_scrnpts, _tnet);
+                _tnet = Transformations.RotateOnY(_tnet, .05);
+                _tnet = Transformations.Translate(_tnet, Transformations.PreviousXPos, Transformations.PreviousYPos, Transformations.PreviousZPos);
+                Refresh();       
             }
             if (e.Button == rotzby1btn)
             {
+                _tnet = Transformations.TranslateToOrigin(_scrnpts, _tnet);
+                _tnet = Transformations.RotateOnZ(_tnet, .05);
+                _tnet = Transformations.Translate(_tnet, Transformations.PreviousXPos, Transformations.PreviousYPos, Transformations.PreviousZPos);
+                Refresh();
             }
 
             if (e.Button == rotxbtn)
             {
+                _rotating = true;
+                _thread = new Thread(new ThreadStart(RotateXAsync));
+                _thread.Start();
             }
             if (e.Button == rotybtn)
             {
+                _rotating = true;
+                _thread = new Thread(new ThreadStart(RotateYAsync));
+                _thread.Start();
             }
 
             if (e.Button == rotzbtn)
             {
+                _rotating = true;
+                _thread = new Thread(new ThreadStart(RotateZAsync));
+                _thread.Start();
             }
 
             if (e.Button == shearleftbtn)
             {
+                _tnet = Transformations.TranslateBaselineToXaxis(_vertices, _scrnpts, _tnet);
+                _tnet = Transformations.ShearHorizontal(_tnet, 0.10);
+                _tnet = Transformations.Translate(_tnet, Transformations.PreviousXPos, Transformations.PreviousYPos, Transformations.PreviousZPos);
                 Refresh();
             }
 
             if (e.Button == shearrightbtn)
             {
+                _tnet = Transformations.TranslateBaselineToXaxis(_vertices, _scrnpts, _tnet);
+                _tnet = Transformations.ShearHorizontal(_tnet, -0.10);
+                _tnet = Transformations.Translate(_tnet, Transformations.PreviousXPos, Transformations.PreviousYPos, Transformations.PreviousZPos);
                 Refresh();
             }
 
@@ -549,9 +591,67 @@ namespace asgn5v1
             }
         }
 
+        private void RotateXAsync()
+        {
+            while (_rotating)
+            {
+                _tnet = Transformations.TranslateToOrigin(_scrnpts, _tnet);
+                _tnet = Transformations.RotateOnX(_tnet, .05);
+                _tnet = Transformations.Translate(_tnet, Transformations.PreviousXPos, Transformations.PreviousYPos, Transformations.PreviousZPos);
+                Thread.Sleep(5);
+                CallRefreshToMainThread();
+            }
+        }
+
+        private void RotateYAsync()
+        {
+            while (_rotating)
+            {
+                _tnet = Transformations.TranslateToOrigin(_scrnpts, _tnet);
+                _tnet = Transformations.RotateOnY(_tnet, .05);
+                _tnet = Transformations.Translate(_tnet, Transformations.PreviousXPos, Transformations.PreviousYPos, Transformations.PreviousZPos);
+                Thread.Sleep(5);
+                CallRefreshToMainThread();
+            }
+        }
+
+        private void RotateZAsync()
+        {
+            while (_rotating)
+            {
+                _tnet = Transformations.TranslateToOrigin(_scrnpts, _tnet);
+                _tnet = Transformations.RotateOnZ(_tnet, .05);
+                _tnet = Transformations.Translate(_tnet, Transformations.PreviousXPos, Transformations.PreviousYPos, Transformations.PreviousZPos);
+                Thread.Sleep(5);
+                CallRefreshToMainThread();
+            }
+        }
+
+        private void CallRefreshToMainThread()
+        {
+            if(this.InvokeRequired)
+            {
+                this.Invoke(new ThreadStart(this.CallRefreshToMainThread));
+            }
+            else
+            {
+                Refresh();
+            }
+        }
+
         private void Transformer_ClientSizeChanged(object sender, EventArgs e)
         {
-            RestoreInitialImage();
+            Invalidate();
+        }
+
+        private void Transformer_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            _rotating = false;
+            if (_thread != null)
+            {
+                _thread.Abort();
+                _thread.Join();
+            }
         }
     }
 }

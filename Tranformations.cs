@@ -3,51 +3,89 @@ using System.Diagnostics;
 
 namespace asgn5v1
 {
-    public static class Tranformations
+    public static class Transformations
     {
+        public static double PreviousXPos = 0;
+        public static double PreviousYPos = 0;
+        public static double PreviousZPos = 0;
+
         public static double[,] TranslateToOrigin(double[,] vertices, double[,] tnet)
         {
             double x, y, z;
-            double[,] tranformation = new double[4, 4];
+            double[,] transformation = new double[4, 4];
+            SetIdentity(transformation, 4, 4);
 
+            PreviousXPos = vertices[0, 0];
+            PreviousYPos = vertices[0, 1];
+            PreviousZPos = vertices[0, 2];
             x = vertices[0, 0] * -1;
             y = vertices[0, 1] * -1;
             z = vertices[0, 2] * -1;
-            tranformation[0, 0] = 1;
-            tranformation[1, 1] = 1;
-            tranformation[2, 2] = 1;
-            tranformation[3, 3] = 1;
-            tranformation[3, 0] = x;
-            tranformation[3, 1] = y;
-            tranformation[3, 2] = z;
+            transformation[3, 0] = x;
+            transformation[3, 1] = y;
+            transformation[3, 2] = z;
 
-            return MatrixMultiply(tnet, tranformation);
+            return MatrixMultiply(tnet, transformation);
+        }
+
+        public static double[,] Translate(double[,] tnet, double xdistance, double ydistance, double zdistance)
+        {
+            double[,] transformation = new double[4, 4];
+            SetIdentity(transformation, 4, 4);
+
+            PreviousXPos = xdistance * -1;
+            PreviousYPos = ydistance * -1;
+            PreviousZPos = zdistance * -1;
+            transformation[3, 0] = xdistance;
+            transformation[3, 1] = ydistance;
+            transformation[3, 2] = zdistance;
+
+            return MatrixMultiply(tnet, transformation);
+        }
+
+        public static double[,] TranslateBaselineToXaxis(double[,] originalVertices, double[,] currentVertices, double[,] tnet)
+        {
+            double[,] transformation = new double[4, 4];
+            SetIdentity(transformation, 4, 4);
+
+            int arows = originalVertices.GetLength(0);
+            int acols = originalVertices.GetLength(1);
+            int i = 0;
+            for (; i < arows; i++)
+            {
+                if(originalVertices[i,1] == 0)
+                {
+                    break;
+                }
+            }
+            double x = currentVertices[i, 0] * -1;
+            double y = currentVertices[i, 1] * -1;
+            double z = currentVertices[i, 2] * -1;
+
+            return Translate(tnet, 0, y, 0);
         }
 
         public static double[,] ReflectOnYAxis(double[,] tnet)
         {
-            double[,] tranformation = new double[4, 4];
+            double[,] transformation = new double[4, 4];
+            SetIdentity(transformation, 4, 4);
 
-            tranformation[0, 0] = 1;
-            tranformation[1, 1] = 1;
-            tranformation[2, 2] = 1;
-            tranformation[3, 3] = 1;
-            tranformation[1, 1] = tranformation[1, 1] * -1;
+            transformation[1, 1] = transformation[1, 1] * -1;
 
-            return MatrixMultiply(tnet, tranformation);
+            return MatrixMultiply(tnet, transformation);
         }
 
         public static double[,] TranslateToCenter(double[,] tnet, double screenWidth, double screenHeight)
         {
             double[,] transformation = new double[4, 4];
+            SetIdentity(transformation, 4, 4);
 
-            transformation[0, 0] = 1;
-            transformation[1, 1] = 1;
-            transformation[2, 2] = 1;
-            transformation[3, 3] = 1;
             double transformX = screenWidth / 2;
             double transformY = screenHeight / 2;
 
+            PreviousXPos = tnet[3, 0];
+            PreviousYPos = tnet[3, 1];
+            PreviousZPos = tnet[3, 2];
             transformation[3, 0] = transformX;
             transformation[3, 1] = transformY;
             transformation[3, 2] = 0;
@@ -57,7 +95,8 @@ namespace asgn5v1
         public static double[,] ScaleToIntial(double[,] vertices, double[,] tnet, double screenHeight)
         {
             double[,] transformation = new double[4, 4];
-
+            SetIdentity(transformation, 4, 4);
+            
             int rows = vertices.GetLength(0);
             int cols = vertices.GetLength(1);
             double min, max;
@@ -72,11 +111,70 @@ namespace asgn5v1
             double height = max - min;
             double scale = (screenHeight / 2) / height;
 
-            transformation[3, 3] = 1;
-
             transformation[0, 0] = scale;
             transformation[1, 1] = scale;
             transformation[2, 2] = scale;
+
+            return MatrixMultiply(tnet, transformation);
+        }
+
+        public static double[,] ScaleUniform(double[,] vertices, double[,] tnet, double factor)
+        {
+            double[,] transformation = new double[4, 4];
+            SetIdentity(transformation, 4, 4);
+
+            transformation[0, 0] = factor;
+            transformation[1, 1] = factor;
+            transformation[2, 2] = factor;
+
+            return MatrixMultiply(tnet, transformation);
+        }
+
+        public static double[,] ShearHorizontal(double[,] tnet, double factor)
+        {
+            double[,] transformation = new double[4, 4];
+            SetIdentity(transformation, 4, 4);
+
+            transformation[1, 0] = factor;
+
+            return MatrixMultiply(tnet, transformation);
+        }
+
+        public static double[,] RotateOnX(double[,] tnet, double radians)
+        {
+            double[,] transformation = new double[4, 4];
+            SetIdentity(transformation, 4, 4);
+
+            transformation[1, 1] = Math.Cos(radians);
+            transformation[1, 2] = Math.Sin(radians);
+            transformation[2, 1] = -Math.Sin(radians);
+            transformation[2, 2] = Math.Cos(radians);
+
+            return MatrixMultiply(tnet, transformation);
+        }
+
+        public static double[,] RotateOnY(double[,] tnet, double radians)
+        {
+            double[,] transformation = new double[4, 4];
+            SetIdentity(transformation, 4, 4);
+
+            transformation[0, 0] = Math.Cos(radians);
+            transformation[2, 0] = -Math.Sin(radians);
+            transformation[0, 2] = Math.Sin(radians);
+            transformation[2, 2] = Math.Cos(radians);
+
+            return MatrixMultiply(tnet, transformation);
+        }
+
+        public static double[,] RotateOnZ(double[,] tnet, double radians)
+        {
+            double[,] transformation = new double[4, 4];
+            SetIdentity(transformation, 4, 4);
+
+            transformation[0, 0] = Math.Cos(radians);
+            transformation[1, 0] = -Math.Sin(radians);
+            transformation[0, 1] = Math.Sin(radians);
+            transformation[1, 1] = Math.Cos(radians);
 
             return MatrixMultiply(tnet, transformation);
         }
@@ -103,6 +201,15 @@ namespace asgn5v1
             }
             return result;
         }
+
+        public static void SetIdentity(double[,] A, int nrow, int ncol)
+        {
+            for (int i = 0; i < nrow; i++)
+            {
+                for (int j = 0; j < ncol; j++) A[i, j] = 0.0d;
+                A[i, i] = 1.0d;
+            }
+        }// end of setIdentity
 
         public static void PrintMatrix(double[,] matrix)
         {
